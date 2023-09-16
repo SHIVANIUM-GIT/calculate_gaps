@@ -1,7 +1,5 @@
 import yfinance as yf
-import pandas as pd
 from typing import Dict
-
 
 def calculate_gaps(ticker: str, start_date: str, end_date: str) -> Dict[str, int]:
     """
@@ -19,8 +17,10 @@ def calculate_gaps(ticker: str, start_date: str, end_date: str) -> Dict[str, int
     - "Gap_Fill_Up_Count" (int): The count of gap fill up occurrences.
     - "Gap_Fill_Down_Count" (int): The count of gap fill down occurrences.
     """
-
-    data = yf.download(ticker, start=start_date, end=end_date, interval="1wk")
+    try:
+        data = yf.download(ticker, start=start_date, end=end_date, interval="1wk")
+    except Exception as e:
+        raise Exception(f"Error fetching data for {ticker}: {e}")
 
     data["Week_Gap_Up"] = (data["Open"] - data["Close"].shift(1)) > 0
     data["Week_Gap_Down"] = (data["Open"] - data["Close"].shift(1)) < 0
@@ -42,10 +42,15 @@ def calculate_gaps(ticker: str, start_date: str, end_date: str) -> Dict[str, int
         "Gap_Fill_Down_Count": gap_fill_down_count,
     }
 
+if __name__ == "__main__":
+    ticker_symbol = "^NSEBANK"
+    start_date = "2017-01-01"
+    end_date = "2023-01-01"
+    
+    try:
+        result = calculate_gaps(ticker_symbol, start_date, end_date)
+        print(result)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-ticker_symbol = "^NSEBANK"
-start_date = "2017-01-01"
-end_date = "2023-01-01"
-result = calculate_gaps(ticker_symbol, start_date, end_date)
 
-print(result)
